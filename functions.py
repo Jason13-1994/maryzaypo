@@ -24,12 +24,3 @@ def general_info(pdf, title, dynamic_data):
     pdf.set_font(family="Arial", size=7)
     pdf.cell(w=40, h=5, txt=dynamic_data, border=0)
     pdf.ln(4)
-
-def fn_tidy( s ) -> str :
-	'''
-		Removes multiple white spaces
-	'''
-	if s != None:
-		return " ".join( s.split() )	# remove excessive white spaces
-	else:
-		return ""
