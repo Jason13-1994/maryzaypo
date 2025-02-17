@@ -2,8 +2,54 @@ import json
 import pandas as pd
 from fpdf import FPDF
 import ast
-import card_fields
+import requests
+from fastapi import FastAPI, Request, Response, BackgroundTasks
 import functions
+
+api_token = 'eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJQaXBlZnkiLCJpYXQiOjE3Mzk3MDU2NzQsImp0aSI6ImVhYWZhYmI2LTFlYmEtNDFhNS1iMzA0LTg4ZmFhMjZiM2Q4ZSIsInN1YiI6MzAxMDE3NDE5LCJ1c2VyIjp7ImlkIjozMDEwMTc0MTksImVtYWlsIjoiamFzb25AZHlkeC5kaWdpdGFsIn19.crOxwf8adrGCZ5vBtjNPut0pqtf1A-E851SCRdOqjMRPq34HIK-XBC6_DLiy0B8mswJlVsL1c1Yp9nkS8pYKrw'
+
+url = "https://pipefy.com/queries"
+
+# Setup headers
+headers = {
+    'Authorization': f'Bearer {api_token}',
+    'Content-Type': 'application/json'
+}
+
+def fn_fetch_card(s_card_id: str = "0") -> ( dict, int ) : # type: ignore
+	'''
+		Fetch whole card.
+	'''
+	s_query = functions.fn_tidy(
+		'''
+			query card{ card(id: ''' + s_card_id + ''' ) {
+				id
+				url
+				pipe { name id }
+				fields {
+					assignee_values { id name email }
+					field { id label }
+					array_value
+					assignee_values { id }
+					value
+				}
+				current_phase { name id }
+				title
+			}
+		}''' 
+	)
+
+@app.post("/get_card/{card_id}")
+async def get_card(req: Request, resp: Response, card_id):
+	try:
+		card, n = my_pipefy.fn_fetch_card( s_card_id = card_id )
+		resp.status_code = n
+		return card
+
+	except Exception as e:
+		resp.status_code = 400
+		e.add_note("Assignees_v2 get_card ERROR.")
+		return e.__dict__
 
 # Build pdf
 pdf = FPDF(orientation="P", unit="mm", format="A4")
